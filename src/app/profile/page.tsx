@@ -1,42 +1,45 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { fetcher } from "@/lib/fetcher";
 
 type UserProfile = {
-  name: string;
-  avatarUrl: string;
-  bio?: string;
-  notifications?: {
-    email?: boolean;
-    inApp?: boolean;
-  };
+  name: string | null;
+  email: string | null;
+  image: string | null;
 };
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile>({
-    name: "",
-    avatarUrl: "",
-    bio: "",
-    notifications: { email: true, inApp: true },
+    name: null,
+    email: null,
+    image: null,
   });
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/user");
-        if (!res.ok) throw new Error("Error cargando perfil");
-        const data = await res.json();
+        setError(null);
+        const data = await fetcher<{
+          name: string | null;
+          email: string | null;
+          image: string | null;
+        }>("/api/user");
+
+        console.log(data, "api/puser");
         setUser({
-          name: data.name ?? data.username ?? "",
-          avatarUrl: data.avatarUrl ?? data.avatar ?? "",
-          bio: data.bio ?? "",
-          notifications: data.notifications ?? { email: true, inApp: true },
+          name: data.name ?? null,
+          email: data.email ?? null,
+          image: data.image ?? null,
         });
       } catch (e) {
-        setError((e as Error).message);
+        const message = e instanceof Error ? e.message : "Error desconocido";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -47,105 +50,135 @@ export default function ProfilePage() {
   async function save() {
     setSaving(true);
     setError(null);
+    setSuccess(null);
     try {
-      const payload = {
-        name: user.name,
-        avatarUrl: user.avatarUrl,
-        bio: user.bio,
-        notifications: user.notifications,
-      };
-      const res = await fetch("/api/user", {
+      await fetcher("/api/user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ name: user.name }),
       });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || "Error al guardar perfil");
-      }
+
+      setSuccess("Perfil actualizado correctamente");
     } catch (e) {
-      setError((e as Error).message);
+      const message = e instanceof Error ? e.message : "Error desconocido";
+      setError(message);
     } finally {
       setSaving(false);
     }
   }
 
   if (loading) {
-    return <div>Loading profile...</div>;
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-zinc-600 dark:text-zinc-400">
+          Cargando perfil...
+        </div>
+      </div>
+    );
   }
 
   return (
-    <section style={{ padding: 24 }}>
-      <h1>Perfil de usuario</h1>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: 6 }}>Nombre</label>
-          <input
-            type="text"
-            value={user.name}
-            onChange={(e) => setUser({ ...user, name: e.target.value })}
-            style={{ width: '100%', padding: 8 }}
-          />
+    <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 dark:bg-black px-6 py-12">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 mb-8">
+          Perfil de usuario
+        </h1>
+
+        {error && (
+          <div className="mb-6 p-4 rounded-lg border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 p-4 rounded-lg border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+            {success}
+          </div>
+        )}
+
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+          <div className="flex items-center gap-6 mb-8">
+            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+              {user.image ? (
+                <Image
+                  src={user.image}
+                  alt="Avatar"
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl text-zinc-400">
+                  {user.name?.[0]?.toUpperCase() ||
+                    user.email?.[0]?.toUpperCase() ||
+                    "?"}
+                </span>
+              )}
+            </div>
+            <div>
+              <p className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
+                {user.name || "Sin nombre"}
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {user.email}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Nombre
+              </label>
+              <input
+                type="text"
+                value={user.name ?? ""}
+                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Avatar URL
+              </label>
+              <input
+                type="text"
+                value={user.image ?? ""}
+                onChange={(e) => setUser({ ...user, image: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                placeholder="https://example.com/avatar.jpg"
+              />
+              {user.image && (
+                <div className="mt-3 w-20 h-20 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                  <Image
+                    src={user.image}
+                    alt="Avatar preview"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <button
+                onClick={save}
+                disabled={saving}
+                className="w-full md:w-auto px-6 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? "Guardando..." : "Guardar cambios"}
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: 6 }}>Avatar URL</label>
-          <input
-            type="text"
-            value={user.avatarUrl}
-            onChange={(e) => setUser({ ...user, avatarUrl: e.target.value })}
-            style={{ width: '100%', padding: 8 }}
-          />
-          {user.avatarUrl && (
-            <img src={user.avatarUrl} alt="Avatar" style={{ width: 100, height: 100, marginTop: 8, objectFit: 'cover', borderRadius: 8 }} />
-          )}
-        </div>
       </div>
-      <div style={{ marginTop: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6 }}>Biografía</label>
-        <textarea
-          rows={4}
-          value={user.bio}
-          onChange={(e) => setUser({ ...user, bio: e.target.value })}
-          style={{ width: '100%', padding: 8 }}
-        />
-      </div>
-      <div style={{ marginTop: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6 }}>Notificaciones</label>
-        <div>
-          <label style={{ marginRight: 12 }}>
-            <input
-              type="checkbox"
-              checked={user.notifications?.email ?? true}
-              onChange={(e) =>
-                setUser({
-                  ...user,
-                  notifications: { ...(user.notifications ?? {}), email: e.target.checked },
-                })
-              }
-            />
-            Email
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={user.notifications?.inApp ?? true}
-              onChange={(e) =>
-                setUser({
-                  ...user,
-                  notifications: { ...(user.notifications ?? {}), inApp: e.target.checked },
-                })
-              }
-            />
-            In-app
-          </label>
-        </div>
-      </div>
-      <div style={{ marginTop: 16 }}>
-        <button onClick={save} disabled={saving} style={{ padding: '8px 12px' }}>
-          {saving ? 'Guardando...' : 'Guardar cambios'}
-        </button>
-      </div>
-    </section>
+    </div>
   );
 }

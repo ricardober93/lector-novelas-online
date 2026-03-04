@@ -26,11 +26,11 @@ export default function Home() {
   const { data: session } = useSession();
   const { data: seriesData, error: seriesError } = useSWR<Series[]>(
     "/api/series?limit=12",
-    fetcher
+    fetcher,
   );
   const { data: historyRaw } = useSWR<unknown>(
     session ? "/api/reading-history" : null,
-    fetcher
+    fetcher,
   );
 
   const series = seriesData || [];
@@ -49,27 +49,13 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 dark:bg-black">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {seriesError && (
-          <div className="mb-6 p-4 rounded border border-red-300 bg-red-50 text-red-700 flex items-center justify-between">
-            <span>No se pudieron cargar las series. Intenta recargar la página.</span>
-            <button
-              onClick={() => {
-                // Trigger revalidation for main series data and, if available, reading history
-                // Note: this is a simple client-side refresh
-                window.location.reload();
-              }}
-              className="ml-4 inline-flex items-center px-3 py-1 rounded bg-red-700 text-white text-sm hover:bg-red-800"
-            >
-              Reintentar
-            </button>
-          </div>
-        )}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 mb-4">
             Panels
           </h1>
           <p className="max-w-md mx-auto text-lg text-zinc-600 dark:text-zinc-400">
-            Tu plataforma de mangas, cómics y novelas visuales para Latinoamérica
+            Tu plataforma de mangas, cómics y novelas visuales para
+            Latinoamérica
           </p>
         </div>
 
@@ -91,7 +77,8 @@ export default function Home() {
                         {item.chapter.volume.series.title}
                       </h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Vol. {item.chapter.volume.number} - Cap. {item.chapter.number}
+                        Vol. {item.chapter.volume.number} - Cap.{" "}
+                        {item.chapter.number}
                         {item.chapter.title && `: ${item.chapter.title}`}
                       </p>
                     </div>
@@ -121,9 +108,14 @@ export default function Home() {
             Series populares
           </h2>
           {series.length === 0 ? (
-            <div className="text-center py-12 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-4">No hay series disponibles aún</p>
-              {/* Creator CTA could be added here if needed */}
+            <div className="text-center py-16 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <div className="text-6xl mb-4">📚</div>
+              <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+                No hay series disponibles aún
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                ¡Sé el primero en crear una serie!
+              </p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -133,7 +125,7 @@ export default function Home() {
                   href={`/series/${s.id}`}
                   className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                 >
-                  <div className="aspect-[3/4] bg-zinc-100 dark:bg-zinc-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                  <div className="aspect-3/4 bg-zinc-100 dark:bg-zinc-800 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                     {s.coverImage ? (
                       <Image
                         src={s.coverImage}
@@ -148,10 +140,16 @@ export default function Home() {
                       <span className="text-4xl">📖</span>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-2">{s.title}</h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-2">{s.description || "Sin descripción"}</p>
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
+                    {s.title}
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-2">
+                    {s.description || "Sin descripción"}
+                  </p>
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 text-xs">{s.type}</span>
+                    <span className="px-2 py-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 text-xs">
+                      {s.type}
+                    </span>
                     <div className="flex gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                       <span>{s._count.volumes} vol.</span>
                       <span>{s._count.chapters} caps.</span>

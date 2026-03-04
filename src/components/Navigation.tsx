@@ -17,23 +17,18 @@ export function Navigation() {
           <div className="h-8 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
         ) : session ? (
           <>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {session.user?.email}
-            </span>
-            {session.user?.role === "CREATOR" && (
+            <Link
+              href="/profile"
+              className="rounded-lg bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-900 dark:text-zinc-50 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            >
+              Perfil
+            </Link>
+            {(session.user?.role === "CREATOR" || session.user?.role === "ADMIN") && (
               <Link
-                href="/creator"
+                href={session.user?.role === "ADMIN" ? "/admin" : "/creator"}
                 className="rounded-lg bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-900 dark:text-zinc-50 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               >
-                Panel de creador
-              </Link>
-            )}
-            {session.user?.role === "ADMIN" && (
-              <Link
-                href="/admin"
-                className="rounded-lg bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-900 dark:text-zinc-50 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              >
-                Panel de admin
+                Administración
               </Link>
             )}
             <button

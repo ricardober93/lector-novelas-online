@@ -31,6 +31,8 @@ Crear una plataforma accesible para lectores latinoamericanos y creadores indepe
 
 - **Frontend:** Next.js 14 (App Router)
 - **Auth:** NextAuth.js + Resend (magic link)
+  - **Note:** Account records are automatically created during magic link authentication via signIn callback
+  - **Migration:** Run `scripts/migrate-missing-accounts.ts` to create Account records for existing users
 - **Database:** Neon (PostgreSQL)
 - **ORM:** Prisma
 - **Storage:** Vercel Blob

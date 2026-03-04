@@ -8,9 +8,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const type = searchParams.get("type");
+    const creatorId = searchParams.get("creatorId");
     const limit = parseInt(searchParams.get("limit") || "20");
 
     const where: Prisma.SeriesWhereInput = {};
+
+    if (creatorId) {
+      where.creatorId = creatorId;
+    }
 
     if (status) {
       where.status = status as Prisma.EnumSeriesStatusFilter;

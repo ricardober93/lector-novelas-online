@@ -106,13 +106,14 @@ export default function CreatorPage() {
           </h2>
 
           {series.length === 0 ? (
-            <div className="text-center py-12 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+            <div className="text-center py-16 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <div className="text-6xl mb-4">✨</div>
+              <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
                 No tienes series aún
               </p>
               <Link
                 href="/creator/series/new"
-                className="text-zinc-900 dark:text-zinc-50 font-medium hover:underline"
+                className="inline-flex items-center px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
               >
                 Crear mi primera serie
               </Link>
