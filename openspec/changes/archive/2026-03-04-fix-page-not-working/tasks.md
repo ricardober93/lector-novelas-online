@@ -1,7 +1,7 @@
 ## 1. Setup
 
-- [ ] 1.1 Initialize feature branch and ensure repo is clean
-- [ ] 1.2 Verify local environment has required tooling (OpenSpec CLI, Node, etc.)
+- [x] 1.1 Initialize feature branch and ensure repo is clean
+- [x] 1.2 Verify local environment has required tooling (OpenSpec CLI, Node, etc.)
 
 ## 2. Core Implementation
 
