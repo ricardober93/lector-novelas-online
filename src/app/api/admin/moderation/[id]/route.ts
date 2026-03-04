@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -82,7 +83,7 @@ export async function PATCH(
 
     return NextResponse.json({ moderation: result });
   } catch (error) {
-    console.error("Error updating moderation:", error);
+    logger.error("Error updating moderation:", error);
     return NextResponse.json(
       { error: "Error al actualizar moderación" },
       { status: 500 }

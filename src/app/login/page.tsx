@@ -2,17 +2,26 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { validateEmail } from "@/lib/validate";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateEmail(email)) {
+      setEmailError("Por favor ingresa un email válido");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
+    setEmailError(null);
 
     try {
       const result = await signIn("email", {
@@ -79,10 +88,22 @@ export default function LoginPage() {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(null);
+              }}
+              className={`mt-1 block w-full rounded-lg border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500 ${
+                emailError 
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500" 
+                  : "border-zinc-300 focus:border-zinc-500 focus:ring-zinc-500 dark:border-zinc-700"
+              }`}
               placeholder="tu@email.com"
             />
+            {emailError && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                {emailError}
+              </p>
+            )}
           </div>
 
           {error && (

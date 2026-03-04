@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteImage } from "@/lib/upload";
+import { logger } from "@/lib/logger";
 
 export async function DELETE(
   request: NextRequest,
@@ -71,7 +72,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting page:", error);
+    logger.error("Error deleting page:", error);
     return NextResponse.json(
       { error: "Error al eliminar página" },
       { status: 500 }

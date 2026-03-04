@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { logger } from "@/lib/logger";
 import { useSession } from "next-auth/react";
 
 interface Moderation {
@@ -65,7 +66,7 @@ export default function AdminPage() {
         setModerations(data.moderations);
       }
     } catch (error) {
-      console.error("Error fetching moderations:", error);
+      logger.error("Error fetching moderations:", error);
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,7 @@ export default function AdminPage() {
 
       fetchModerations();
     } catch (error) {
-      console.error("Error updating moderation:", error);
+      logger.error("Error updating moderation:", error);
       alert(error instanceof Error ? error.message : "Error al actualizar");
     } finally {
       setActionLoading(null);

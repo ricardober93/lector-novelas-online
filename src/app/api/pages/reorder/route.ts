@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -67,7 +68,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error reordering pages:", error);
+    logger.error("Error reordering pages:", error);
     return NextResponse.json(
       { error: "Error al reordenar páginas" },
       { status: 500 }

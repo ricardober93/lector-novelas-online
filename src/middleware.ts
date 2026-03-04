@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
 
-  const protectedPaths = ["/creator", "/api/series", "/api/chapters", "/api/user"];
+  const protectedPaths = ["/creator", "/read", "/api/series", "/api/chapters", "/api/user"];
   const adminPaths = ["/admin", "/api/admin"];
 
   const isProtectedPath = protectedPaths.some((path) =>
@@ -39,6 +39,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/creator/:path*",
+    "/read/:path*",
     "/admin/:path*",
     "/api/series/:path*",
     "/api/chapters/:path*",

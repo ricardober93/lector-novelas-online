@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import { put, del } from "@vercel/blob";
 import { validateImageFormat } from "./validate";
+import { logger } from "@/lib/logger";
 
 export interface ProcessedImage {
   url: string;
@@ -64,6 +65,6 @@ export async function deleteImage(url: string): Promise<void> {
   try {
     await del(url);
   } catch (error) {
-    console.error("Error deleting image:", error);
+    logger.error("Error deleting image:", error);
   }
 }

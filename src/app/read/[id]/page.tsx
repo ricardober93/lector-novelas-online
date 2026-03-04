@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
 import { ChapterReader } from "@/components/reader";
+import { fetcher } from "@/lib/fetcher";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface Chapter {
   id: string;
@@ -17,7 +18,7 @@ interface Chapter {
     series: {
       id: string;
       title: string;
-      isAdult: true;
+      isAdult: boolean;
     };
   };
   pages: Page[];
@@ -41,51 +42,46 @@ export default function ReadPage({
 }: {
   params: { id: string };
 }) {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const [chapter, setChapter] = useState<Chapter | null>(null);
-  const [navigation, setNavigation] = useState<Navigation>({ previous: null, next: null });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  
+  const { data: chapterData, error: chapterError } = useSWR<{ chapter: Chapter }>(
+    `/api/chapters/${params.id}`,
+    fetcher
+  );
+  
+  const { data: navigation } = useSWR<Navigation>(
+    `/api/chapters/navigation?chapterId=${params.id}`,
+    fetcher
+  );
 
-  useEffect(() => {
-    if (session === null) {
-      router.push("/login");
-    }
-  }, [session, router]);
+  const chapter = chapterData?.chapter || null;
+  const loading = status === "loading" || (!chapterData && !chapterError);
+  const error = chapterError ? "Error al cargar capítulo" : null;
+  const nav = navigation || { previous: null, next: null };
 
-  useEffect(() => {
-    fetchChapter();
-  }, [params.id]);
-
-  const fetchChapter = async () => {
+  const prefetchChapter = async (chapterId: string) => {
     try {
-      const response = await fetch(`/api/chapters/${params.id}`);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Error al obtener capítulo");
-      }
-      const data = await response.json();
-      setChapter(data.chapter);
-
-      const navResponse = await fetch(
-        `/api/chapters/navigation?chapterId=${params.id}`
-      );
-      if (navResponse.ok) {
-        const navData = await navResponse.json();
-        setNavigation(navData);
-      }
+      await fetch(`/api/chapters/${chapterId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar capítulo");
-    } finally {
-      setLoading(false);
+      // Silently fail prefetch
     }
   };
 
-  if (session === undefined || loading) {
+  const prefetchSeries = async (seriesId: string) => {
+    try {
+      await fetch(`/api/series/${seriesId}`);
+    } catch (err) {
+      // Silently fail prefetch
+    }
+  };
+
+  if (status === "loading" || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-zinc-600 dark:text-zinc-400">Cargando...</div>
+        <div className="text-center space-y-4">
+          <LoadingSpinner className="text-zinc-900 dark:text-zinc-50" />
+          <p className="text-zinc-600 dark:text-zinc-400">Cargando capítulo...</p>
+        </div>
       </div>
     );
   }
@@ -119,59 +115,62 @@ export default function ReadPage({
         pages={chapter.pages}
       />
 
-      <div className="max-w-4xl mx-auto px-4 pb-12">
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-6">
-          <div className="flex items-center justify-between">
-            {navigation.previous ? (
-              <Link
-                href={`/read/${navigation.previous.id}`}
-                className="flex-1 text-center py-3 px-4 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
-                  ← Capítulo anterior
-                </div>
-                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  Cap. {navigation.previous.number}
-                  {navigation.previous.title && ` - ${navigation.previous.title}`}
-                </div>
-              </Link>
-            ) : (
-              <div className="flex-1" />
-            )}
+        <div className="max-w-4xl mx-auto px-4 pb-12">
+          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-6">
+            <div className="flex items-center justify-between">
+              {nav.previous ? (
+                <Link
+                  href={`/read/${nav.previous.id}`}
+                  onMouseEnter={() => prefetchChapter(nav.previous!.id)}
+                  className="flex-1 text-center py-3 px-4 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+                    ← Capítulo anterior
+                  </div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    Cap. {nav.previous.number}
+                    {nav.previous.title && ` - ${nav.previous.title}`}
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex-1" />
+              )}
 
-            <Link
-              href={`/series/${chapter.volume.series.id}`}
-              className="px-6 py-3 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
-            >
-              Ver serie
-            </Link>
-
-            {navigation.next ? (
               <Link
-                href={`/read/${navigation.next.id}`}
-                className="flex-1 text-center py-3 px-4 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+                href={`/series/${chapter.volume.series.id}`}
+                onMouseEnter={() => prefetchSeries(chapter.volume.series.id)}
+                className="px-6 py-3 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
               >
-                <div className="text-xs opacity-80 mb-1">
-                  Siguiente capítulo →
-                </div>
-                <div className="text-sm font-medium">
-                  Cap. {navigation.next.number}
-                  {navigation.next.title && ` - ${navigation.next.title}`}
-                </div>
+                Ver serie
               </Link>
-            ) : (
-              <div className="flex-1 text-center py-3 px-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
-                  Serie completada
+
+              {nav.next ? (
+                <Link
+                  href={`/read/${nav.next.id}`}
+                  onMouseEnter={() => prefetchChapter(nav.next!.id)}
+                  className="flex-1 text-center py-3 px-4 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+                >
+                  <div className="text-xs opacity-80 mb-1">
+                    Siguiente capítulo →
+                  </div>
+                  <div className="text-sm font-medium">
+                    Cap. {nav.next.number}
+                    {nav.next.title && ` - ${nav.next.title}`}
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex-1 text-center py-3 px-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+                    Serie completada
+                  </div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    ✓
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  ✓
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

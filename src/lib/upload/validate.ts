@@ -1,4 +1,5 @@
 import { fileTypeFromBuffer } from "file-type";
+import { logger } from "@/lib/logger";
 
 export async function validateImageFormat(
   buffer: Uint8Array
@@ -10,7 +11,7 @@ export async function validateImageFormat(
     const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
     return allowedMimeTypes.includes(type.mime);
   } catch (error) {
-    console.error("Error validating image format:", error);
+    logger.error("Error validating image format:", error);
     return false;
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -47,7 +48,7 @@ export async function GET(
 
     return NextResponse.json({ series });
   } catch (error) {
-    console.error("Error fetching series:", error);
+    logger.error("Error fetching series:", error);
     return NextResponse.json(
       { error: "Error al obtener serie" },
       { status: 500 }
@@ -116,7 +117,7 @@ export async function PATCH(
 
     return NextResponse.json({ series });
   } catch (error) {
-    console.error("Error updating series:", error);
+    logger.error("Error updating series:", error);
     return NextResponse.json(
       { error: "Error al actualizar serie" },
       { status: 500 }
@@ -166,7 +167,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting series:", error);
+    logger.error("Error deleting series:", error);
     return NextResponse.json(
       { error: "Error al eliminar serie" },
       { status: 500 }

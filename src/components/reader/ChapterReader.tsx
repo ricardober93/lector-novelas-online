@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ProgressBar } from "./ProgressBar";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { logger } from "@/lib/logger";
 
 interface Page {
   id: string;
@@ -32,6 +33,7 @@ export function ChapterReader({
   const [progress, setProgress] = useState(0);
   const lastSavedPage = useRef(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const pageRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const totalPages = pages.length;
 
@@ -50,14 +52,14 @@ export function ChapterReader({
           }),
         });
       } catch (error) {
-        console.error("Error saving progress:", error);
+        logger.error("Error saving progress:", error);
       }
     },
     [chapterId]
   );
 
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -82,10 +84,14 @@ export function ChapterReader({
       { threshold: 0.5 }
     );
 
-    const pageElements = document.querySelectorAll("[data-page]");
-    pageElements.forEach((el) => observerRef.current?.observe(el));
+    observerRef.current = observer;
 
-    return () => observerRef.current?.disconnect();
+    pageRefs.current.forEach((el) => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
   }, [pages, totalPages, onProgressUpdate, saveProgress]);
 
   useEffect(() => {
@@ -106,6 +112,14 @@ export function ChapterReader({
     );
   };
 
+  const setPageRef = useCallback((pageId: string) => (el: HTMLElement | null) => {
+    if (el) {
+      pageRefs.current.set(pageId, el);
+    } else {
+      pageRefs.current.delete(pageId);
+    }
+  }, []);
+
   return (
     <>
       <ProgressBar
@@ -118,8 +132,12 @@ export function ChapterReader({
         <div className="max-w-4xl mx-auto">
           {pages.map((page, index) => (
             <div key={page.id}>
-              <div data-page={page.number} className="mb-1">
-                <PageImage page={page} />
+              <div 
+                ref={setPageRef(page.id)}
+                data-page={page.number} 
+                className="mb-1"
+              >
+                <PageImage page={page} index={index} />
               </div>
 
               {shouldShowAd(index) && (
@@ -135,8 +153,20 @@ export function ChapterReader({
   );
 }
 
-function PageImage({ page }: { page: Page }) {
+function PageImage({ page, index }: { page: Page; index: number }) {
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const isPriority = index < 3;
+
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 p-8 rounded-lg">
+        <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+          Error al cargar la página {page.number}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full">
@@ -151,12 +181,16 @@ function PageImage({ page }: { page: Page }) {
         />
       )}
 
-      <img
+      <Image
         src={page.imageUrl}
         alt={`Página ${page.number}`}
-        loading="lazy"
+        width={page.width || 800}
+        height={page.height || 1200}
+        priority={isPriority}
+        loading={isPriority ? "eager" : "lazy"}
         onLoad={() => setLoaded(true)}
-        className="w-full h-auto"
+        onError={() => setError(true)}
+        className="w-full h-auto transition-opacity duration-300"
         style={{ opacity: loaded ? 1 : 0 }}
       />
     </div>

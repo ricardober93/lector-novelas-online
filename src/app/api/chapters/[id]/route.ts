@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -46,7 +47,7 @@ export async function GET(
 
     return NextResponse.json({ chapter });
   } catch (error) {
-    console.error("Error fetching chapter:", error);
+    logger.error("Error fetching chapter:", error);
     return NextResponse.json(
       { error: "Error al obtener capítulo" },
       { status: 500 }
@@ -115,7 +116,7 @@ export async function PATCH(
 
     return NextResponse.json({ chapter });
   } catch (error) {
-    console.error("Error updating chapter:", error);
+    logger.error("Error updating chapter:", error);
     return NextResponse.json(
       { error: "Error al actualizar capítulo" },
       { status: 500 }
@@ -176,7 +177,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting chapter:", error);
+    logger.error("Error deleting chapter:", error);
     return NextResponse.json(
       { error: "Error al eliminar capítulo" },
       { status: 500 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { DropZone } from "./DropZone";
 import { PagePreview } from "./PagePreview";
 import { ProgressBar } from "./ProgressBar";
@@ -20,6 +20,7 @@ export function ChapterUploadForm({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [currentUploading, setCurrentUploading] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleFilesSelected = useCallback((selectedFiles: File[]) => {
     setError(null);
@@ -30,8 +31,20 @@ export function ChapterUploadForm({
     setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const handleCancel = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setUploading(false);
+      setError("Upload cancelado");
+    }
+  }, []);
+
   const handleUploadZip = async () => {
     if (files.length === 0) return;
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setUploading(true);
     setError(null);
@@ -43,6 +56,7 @@ export function ChapterUploadForm({
       const response = await fetch(`/api/chapters/${chapterId}/upload`, {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -53,14 +67,21 @@ export function ChapterUploadForm({
       setFiles([]);
       onUploadComplete();
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Error al subir archivo");
     } finally {
       setUploading(false);
+      abortControllerRef.current = null;
     }
   };
 
   const handleUploadIndividual = async () => {
     if (files.length === 0) return;
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setUploading(true);
     setError(null);
@@ -69,6 +90,8 @@ export function ChapterUploadForm({
 
     try {
       for (let i = 0; i < files.length; i++) {
+        if (controller.signal.aborted) break;
+
         setCurrentUploading(i + 1);
         setUploadProgress((i / files.length) * 100);
 
@@ -80,6 +103,7 @@ export function ChapterUploadForm({
         const response = await fetch("/api/pages", {
           method: "POST",
           body: formData,
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -88,13 +112,19 @@ export function ChapterUploadForm({
         }
       }
 
-      setUploadProgress(100);
-      setFiles([]);
-      onUploadComplete();
+      if (!controller.signal.aborted) {
+        setUploadProgress(100);
+        setFiles([]);
+        onUploadComplete();
+      }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Error al subir imágenes");
     } finally {
       setUploading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -204,15 +234,17 @@ export function ChapterUploadForm({
 
       <div className="flex gap-4">
         <button
-          onClick={() => setFiles([])}
-          disabled={uploading || files.length === 0}
+          onClick={uploading ? handleCancel : () => setFiles([])}
+          disabled={!uploading && files.length === 0}
+          aria-label={uploading ? "Cancelar upload" : "Limpiar archivos seleccionados"}
           className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancelar
+          {uploading ? "Cancelar upload" : "Cancelar"}
         </button>
         <button
           onClick={handleUpload}
           disabled={uploading || files.length === 0}
+          aria-label="Subir archivos"
           className="flex-1 rounded-lg bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-900 px-4 py-3 text-sm font-medium text-white hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? "Subiendo..." : "Subir"}

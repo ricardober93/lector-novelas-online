@@ -1,0 +1,4 @@
+name: fix-turbopack-login-crash
+status: draft
+description: Fix Turbopack crash when loading the /login page in Next.js app
+created_by: OpenCode

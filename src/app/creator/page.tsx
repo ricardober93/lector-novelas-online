@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { logger } from "@/lib/logger";
 import Link from "next/link";
 
 interface Series {
@@ -43,7 +44,7 @@ export default function CreatorPage() {
         setSeries(data.series);
       }
     } catch (error) {
-      console.error("Error fetching series:", error);
+      logger.error("Error fetching series:", error);
     } finally {
       setLoading(false);
     }

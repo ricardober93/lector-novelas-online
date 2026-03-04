@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import {
   extractImagesFromZip,
   validateZipSize,
@@ -152,19 +153,19 @@ export async function POST(
         pageCount: pages.length,
       });
     } catch (error) {
-      console.error("Error uploading images, cleaning up:", error);
+      logger.error("Error uploading images, cleaning up:", error);
       for (const url of uploadedUrls) {
         try {
           const { del } = await import("@vercel/blob");
           await del(url);
         } catch (cleanupError) {
-          console.error("Error cleaning up blob:", cleanupError);
+          logger.error("Error cleaning up blob:", cleanupError);
         }
       }
       throw error;
     }
   } catch (error) {
-    console.error("Error uploading chapter:", error);
+    logger.error("Error uploading chapter:", error);
     return NextResponse.json(
       {
         error:

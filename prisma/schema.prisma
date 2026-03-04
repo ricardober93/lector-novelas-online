@@ -40,12 +40,15 @@ enum ModerationStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  role          Role      @default(READER)
-  showAdult     Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id            String       @id @default(cuid())
+  email         String       @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          Role         @default(READER)
+  showAdult     Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   series        Series[]
   readingHistory ReadingHistory[]

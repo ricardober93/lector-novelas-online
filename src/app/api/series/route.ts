@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,16 +10,16 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    const where: any = {};
+    const where: Prisma.SeriesWhereInput = {};
 
     if (status) {
-      where.status = status;
+      where.status = status as Prisma.EnumSeriesStatusFilter;
     } else {
       where.status = "ACTIVE";
     }
 
     if (type) {
-      where.type = type;
+      where.type = type as Prisma.EnumContentTypeFilter;
     }
 
     const series = await prisma.series.findMany({
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ series: seriesWithChapterCount });
   } catch (error) {
-    console.error("Error fetching series:", error);
+    logger.error("Error fetching series:", error);
     return NextResponse.json(
       { error: "Error al obtener series" },
       { status: 500 }

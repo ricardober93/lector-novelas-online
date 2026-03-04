@@ -3,13 +3,52 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import EmailProvider from "next-auth/providers/email";
 import { Resend } from "resend";
 import { prisma } from "./prisma";
+import { logger } from "./logger";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const fromEmail = "noreply@panels.lat";
 
+const prismaAdapter = PrismaAdapter(prisma);
+
+prismaAdapter.useVerificationToken = async ({ identifier, token }) => {
+  try {
+    logger.log("useVerificationToken called with:", { identifier, token });
+    
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: { identifier, token },
+    });
+
+    logger.log("Token found:", verificationToken);
+
+    if (!verificationToken) {
+      logger.warn("Token not found for identifier:", identifier);
+      return null;
+    }
+
+    // Check if token is expired
+    if (verificationToken.expires < new Date()) {
+      logger.warn("Token expired:", verificationToken.expires);
+      await prisma.verificationToken.deleteMany({
+        where: { identifier, token },
+      });
+      return null;
+    }
+
+    await prisma.verificationToken.deleteMany({
+      where: { identifier, token },
+    });
+
+    logger.log("Token verified and deleted successfully");
+    return verificationToken;
+  } catch (error) {
+    logger.error("Error in useVerificationToken:", error);
+    return null;
+  }
+};
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: prismaAdapter,
   providers: [
     EmailProvider({
       server: process.env.RESEND_API_KEY!,
@@ -31,32 +70,13 @@ export const authOptions: NextAuthOptions = {
             `,
           });
         } catch (error) {
-          console.error("Error sending email:", error);
+          logger.error("Error sending email:", error);
           throw new Error("Error sending email");
         }
       },
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
-      if (!user.email) return false;
-
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email },
-      });
-
-      if (!existingUser) {
-        await prisma.user.create({
-          data: {
-            email: user.email,
-            role: "READER",
-            showAdult: false,
-          },
-        });
-      }
-
-      return true;
-    },
     async session({ session, user }) {
       if (session.user && user) {
         session.user.id = user.id;

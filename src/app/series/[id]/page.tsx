@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 interface Series {
   id: string;
@@ -40,58 +41,43 @@ interface ReadingProgress {
   progress: number;
 }
 
+interface ReadingHistoryItem {
+  chapterId: string;
+  lastPage: number;
+  progress: number;
+}
+
 export default function SeriesPage({
   params,
 }: {
   params: { id: string };
 }) {
   const { data: session } = useSession();
-  const [series, setSeries] = useState<Series | null>(null);
-  const [readingProgress, setReadingProgress] = useState<Record<string, ReadingProgress>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  const { data: seriesData, error: seriesError } = useSWR<{ series: Series }>(
+    `/api/series/${params.id}`,
+    fetcher
+  );
+  
+  const { data: historyData } = useSWR<{ history: ReadingHistoryItem[] }>(
+    session ? "/api/reading-history" : null,
+    fetcher
+  );
 
-  useEffect(() => {
-    fetchSeries();
-    if (session) {
-      fetchReadingProgress();
-    }
-  }, [params.id, session]);
+  const series = seriesData?.series || null;
+  const loading = !seriesData && !seriesError;
+  const error = seriesError ? "Error al cargar serie" : null;
 
-  const fetchSeries = async () => {
-    try {
-      const response = await fetch(`/api/series/${params.id}`);
-      if (!response.ok) {
-        throw new Error("Error al obtener serie");
-      }
-      const data = await response.json();
-      setSeries(data.series);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar serie");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchReadingProgress = async () => {
-    try {
-      const response = await fetch("/api/reading-history");
-      if (response.ok) {
-        const data = await response.json();
-        const progressMap: Record<string, ReadingProgress> = {};
-        data.history.forEach((item: any) => {
-          progressMap[item.chapterId] = {
-            chapterId: item.chapterId,
-            lastPage: item.lastPage,
-            progress: item.progress,
-          };
-        });
-        setReadingProgress(progressMap);
-      }
-    } catch (error) {
-      console.error("Error fetching reading progress:", error);
-    }
-  };
+  const readingProgress: Record<string, ReadingProgress> = {};
+  if (historyData?.history) {
+    historyData.history.forEach((item) => {
+      readingProgress[item.chapterId] = {
+        chapterId: item.chapterId,
+        lastPage: item.lastPage,
+        progress: item.progress,
+      };
+    });
+  }
 
   if (loading) {
     return (

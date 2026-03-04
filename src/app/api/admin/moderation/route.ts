@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+import { ModerationStatus } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const moderations = await prisma.moderation.findMany({
       where: {
-        status: status as any,
+        status: status as ModerationStatus,
       },
       include: {
         series: {
@@ -72,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ moderations });
   } catch (error) {
-    console.error("Error fetching moderations:", error);
+    logger.error("Error fetching moderations:", error);
     return NextResponse.json(
       { error: "Error al obtener moderaciones" },
       { status: 500 }
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ moderation }, { status: 201 });
   } catch (error) {
-    console.error("Error creating moderation:", error);
+    logger.error("Error creating moderation:", error);
     return NextResponse.json(
       { error: "Error al crear moderación" },
       { status: 500 }
