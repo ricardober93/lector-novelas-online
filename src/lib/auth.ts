@@ -6,6 +6,28 @@ import { prisma } from "./prisma";
 import { logger } from "./logger";
 import { Role } from "@prisma/client";
 
+/**
+ * NextAuth Configuration - JWT Session Strategy
+ * 
+ * This application uses JWT session strategy (not database sessions).
+ * 
+ * Session Management:
+ * - Sessions are stored as JWT tokens in cookies (not in database)
+ * - JWT tokens contain: id, role, showAdult, iat, exp
+ * - Token expiration: 30 days
+ * - No database lookups required for session validation
+ * 
+ * Role Changes:
+ * - Role changes apply on next login (not immediately)
+ * - JWT tokens cannot be revoked before expiration
+ * - Acceptable tradeoff for better performance and middleware compatibility
+ * 
+ * Migration Notes:
+ * - Changed from "database" to "jwt" strategy on 2026-03-04
+ * - sessions table is no longer used but kept for rollback capability
+ * - All existing sessions were invalidated during migration
+ */
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const fromEmail = "noreply@panels.lat";
@@ -191,7 +213,7 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {
