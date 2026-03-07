@@ -96,7 +96,24 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-5. **Ejecutar en desarrollo**
+5. **Poblar con datos de prueba (opcional)**
+```bash
+npx prisma db seed
+```
+
+Esto creará:
+- **3 usuarios de prueba:**
+  - `reader@test.com` (rol: READER)
+  - `creator@test.com` (rol: CREATOR)
+  - `admin@test.com` (rol: ADMIN)
+- **10 series** de ejemplo (mangas, cómics, manhuas, etc.)
+- **20 volúmenes** (2 por serie)
+- **100 capítulos** (5 por volumen, con estados APPROVED y PENDING)
+- **1500 páginas** con imágenes placeholder
+
+**Nota:** El script de seed solo funciona en ambiente de desarrollo. Los usuarios pueden ingresar usando magic link con sus correos de prueba.
+
+6. **Ejecutar en desarrollo**
 ```bash
 npm run dev
 ```

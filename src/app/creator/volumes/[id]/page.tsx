@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -29,8 +29,9 @@ interface Chapter {
 export default function VolumeDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
   const [volume, setVolume] = useState<Volume | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,11 +44,11 @@ export default function VolumeDetailPage({
 
   useEffect(() => {
     fetchVolume();
-  }, [params.id]);
+  }, [id]);
 
   const fetchVolume = async () => {
     try {
-      const response = await fetch(`/api/volumes/${params.id}`);
+      const response = await fetch(`/api/volumes/${id}`);
       if (!response.ok) {
         throw new Error("Error al obtener volumen");
       }
@@ -72,7 +73,7 @@ export default function VolumeDetailPage({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          volumeId: params.id,
+          volumeId: id,
           number: parseInt(chapterNumber),
           title: chapterTitle || null,
         }),
@@ -214,7 +215,7 @@ export default function VolumeDetailPage({
             </div>
           )}
 
-          {volume.chapters.length === 0 ? (
+          {volume.chapters?.length === 0 ? (
             <div className="text-center py-12 rounded-lg border border-zinc-200 dark:border-zinc-800">
               <p className="text-zinc-600 dark:text-zinc-400">
                 No hay capítulos aún
@@ -228,7 +229,7 @@ export default function VolumeDetailPage({
             </div>
           ) : (
             <div className="space-y-4">
-              {volume.chapters.map((chapter) => (
+              {volume.chapters?.map((chapter) => (
                 <div
                   key={chapter.id}
                   className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6"

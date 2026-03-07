@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
@@ -50,12 +51,13 @@ interface ReadingHistoryItem {
 export default function SeriesPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const { data: session } = useSession();
   
   const { data: seriesData, error: seriesError } = useSWR<{ series: Series }>(
-    `/api/series/${params.id}`,
+    `/api/series/${id}`,
     fetcher
   );
   
@@ -135,7 +137,7 @@ export default function SeriesPage({
         </div>
 
         <div className="space-y-8">
-          {series.volumes.map((volume) => (
+          {series.volumes?.map((volume) => (
             <div key={volume.id}>
               <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
                 Volumen {volume.number}
@@ -144,8 +146,8 @@ export default function SeriesPage({
 
               <div className="space-y-3">
                 {volume.chapters
-                  .filter((ch) => ch.status === "APPROVED")
-                  .map((chapter) => {
+                  ?.filter((ch) => ch.status === "APPROVED")
+                  ?.map((chapter) => {
                     const progress = readingProgress[chapter.id];
                     const isComplete = progress && progress.progress >= 100;
 

@@ -21,6 +21,18 @@ export async function GET(
         },
         volumes: {
           include: {
+            chapters: {
+              select: {
+                id: true,
+                number: true,
+                title: true,
+                pageCount: true,
+                status: true,
+              },
+              orderBy: {
+                number: "asc",
+              },
+            },
             _count: {
               select: {
                 chapters: true,

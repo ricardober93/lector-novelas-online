@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChapterUploadForm } from "@/components/upload";
 
@@ -32,19 +32,20 @@ interface Page {
 export default function ChapterDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchChapter();
-  }, [params.id]);
+  }, [id]);
 
   const fetchChapter = async () => {
     try {
-      const response = await fetch(`/api/chapters/${params.id}`);
+      const response = await fetch(`/api/chapters/${id}`);
       if (!response.ok) {
         throw new Error("Error al obtener capítulo");
       }
@@ -126,13 +127,13 @@ export default function ChapterDetailPage({
           />
         </div>
 
-        {chapter.pages.length > 0 && (
+        {(chapter.pages?.length ?? 0) > 0 && (
           <div>
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
-              Páginas ({chapter.pages.length})
+              Páginas ({chapter.pages?.length ?? 0})
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {chapter.pages.map((page) => (
+              {chapter.pages?.map((page) => (
                 <div
                   key={page.id}
                   className="aspect-[3/4] rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden relative group"

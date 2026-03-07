@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
@@ -40,17 +41,18 @@ interface Navigation {
 export default function ReadPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const { data: session, status } = useSession();
   
   const { data: chapterData, error: chapterError } = useSWR<{ chapter: Chapter }>(
-    `/api/chapters/${params.id}`,
+    `/api/chapters/${id}`,
     fetcher
   );
   
   const { data: navigation } = useSWR<Navigation>(
-    `/api/chapters/navigation?chapterId=${params.id}`,
+    `/api/chapters/navigation?chapterId=${id}`,
     fetcher
   );
 
@@ -112,7 +114,7 @@ export default function ReadPage({
     <div className="min-h-screen bg-white dark:bg-black">
       <ChapterReader
         chapterId={chapter.id}
-        pages={chapter.pages}
+        pages={chapter.pages || []}
       />
 
         <div className="max-w-4xl mx-auto px-4 pb-12">

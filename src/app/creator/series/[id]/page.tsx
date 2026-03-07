@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -31,8 +31,9 @@ interface Volume {
 export default function SeriesDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
   const { data: session } = useSession();
   const [series, setSeries] = useState<Series | null>(null);
@@ -46,11 +47,11 @@ export default function SeriesDetailPage({
 
   useEffect(() => {
     fetchSeries();
-  }, [params.id]);
+  }, [id]);
 
   const fetchSeries = async () => {
     try {
-      const response = await fetch(`/api/series/${params.id}`);
+      const response = await fetch(`/api/series/${id}`);
       if (!response.ok) {
         throw new Error("Error al obtener serie");
       }
@@ -75,7 +76,7 @@ export default function SeriesDetailPage({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          seriesId: params.id,
+          seriesId: id,
           number: parseInt(volumeNumber),
           title: volumeTitle || null,
         }),
@@ -156,7 +157,7 @@ export default function SeriesDetailPage({
               </div>
             </div>
             <button
-              onClick={() => router.push(`/creator/series/${params.id}/edit`)}
+              onClick={() => router.push(`/creator/series/${id}/edit`)}
               className="rounded-lg bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:hover:bg-zinc-200"
             >
               Editar
@@ -239,7 +240,7 @@ export default function SeriesDetailPage({
             </div>
           )}
 
-          {series.volumes.length === 0 ? (
+          {(series.volumes?.length ?? 0) === 0 ? (
             <div className="text-center py-12 rounded-lg border border-zinc-200 dark:border-zinc-800">
               <p className="text-zinc-600 dark:text-zinc-400">
                 No hay volúmenes aún
@@ -253,7 +254,7 @@ export default function SeriesDetailPage({
             </div>
           ) : (
             <div className="space-y-4">
-              {series.volumes.map((volume) => (
+              {series.volumes?.map((volume) => (
                 <Link
                   key={volume.id}
                   href={`/creator/volumes/${volume.id}`}

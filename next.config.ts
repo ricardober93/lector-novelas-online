@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.public.blob.vercel-storage.com',
       },
+      {
+        // Development only: Placeholder images from seed script
+        // Production uses Vercel Blob Storage
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
     ],
   },
 };
