@@ -84,8 +84,8 @@ cp .env.example .env.local
 Editar `.env.local`:
 ```bash
 DATABASE_URL="postgresql://..."          # Neon connection string
-NEXTAUTH_SECRET="tu-secret-aqui"         # Generar con: openssl rand -base64 32
-NEXTAUTH_URL="http://localhost:3000"
+BETTER_AUTH_SECRET="tu-secret-aqui"      # Generar con: openssl rand -base64 32
+BETTER_AUTH_URL="http://localhost:3000"
 RESEND_API_KEY="re_xxxxx"                # Resend API key
 BLOB_READ_WRITE_TOKEN="vercel_blob_xxx"  # Vercel Blob token
 ```

@@ -338,8 +338,8 @@ npx vitest --run               # All tests once
 Required variables in `.env.local`:
 ```
 DATABASE_URL="postgresql://..."
-NEXTAUTH_SECRET="..."
-NEXTAUTH_URL="http://localhost:3000"
+BETTER_AUTH_SECRET="..."
+BETTER_AUTH_URL="http://localhost:3000"
 RESEND_API_KEY="re_..."
 ```
 
