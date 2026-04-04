@@ -1,0 +1,31 @@
+meta {
+  name: Crear administrador
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/admin/users
+  body: json
+  auth: inherit
+}
+
+headers {
+  content-type: application/json
+  cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "email": "ribermudezt@gmail.com",
+    "name": "Admin Bruno",
+    "role": "ADMIN",
+    "showAdult": false
+  }
+}
+
+tests {
+  test("responde 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

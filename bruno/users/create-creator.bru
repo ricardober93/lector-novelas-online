@@ -1,0 +1,31 @@
+meta {
+  name: Crear creador
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/admin/users
+  body: json
+  auth: inherit
+}
+
+headers {
+  content-type: application/json
+  cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "email": "creator@example.com",
+    "name": "Creador Bruno",
+    "role": "CREATOR",
+    "showAdult": false
+  }
+}
+
+tests {
+  test("responde 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
