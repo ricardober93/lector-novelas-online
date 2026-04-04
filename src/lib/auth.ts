@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { magicLink } from "better-auth/plugins";
 import { Resend } from "resend";
 
+import { isAdminEmail, normalizeEmail } from "./admin-user";
 import { authDatabaseConfig } from "./auth-config";
 import { authAdditionalFields } from "./auth-fields";
 import { prisma } from "./prisma";
@@ -38,6 +40,52 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,
+    },
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/email") {
+        return;
+      }
+
+      const email = typeof ctx.body?.email === "string" ? normalizeEmail(ctx.body.email) : "";
+
+      if (!isAdminEmail(email)) {
+        return;
+      }
+
+      await prisma.user.upsert({
+        where: { email },
+        update: {
+          role: "ADMIN",
+          emailVerified: true,
+        },
+        create: {
+          email,
+          role: "ADMIN",
+          emailVerified: true,
+          showAdult: false,
+        },
+      });
+    }),
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          if (!isAdminEmail(user.email)) {
+            return;
+          }
+
+          await prisma.user.update({
+            where: { email: normalizeEmail(user.email) },
+            data: {
+              role: "ADMIN",
+              emailVerified: true,
+            },
+          });
+        },
+      },
     },
   },
   plugins: [

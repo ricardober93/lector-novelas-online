@@ -2,28 +2,35 @@ import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
+import { normalizeEmail, resolveRoleForEmail } from "../src/lib/admin-user";
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const email = process.argv[2];
-  
-  if (!email) {
+  const rawEmail = process.argv[2];
+
+  if (!rawEmail) {
     console.log("❌ Por favor proporciona un email");
-    console.log("Uso: npx tsx prisma/create-admin.ts tu@email.com");
+    console.log("Uso: npm run create:admin -- tu@email.com");
     process.exit(1);
   }
+
+  const email = normalizeEmail(rawEmail);
+  const role = resolveRoleForEmail(email, "ADMIN");
 
   const user = await prisma.user.upsert({
     where: { email },
     update: {
-      role: "ADMIN",
+      role,
+      emailVerified: true,
     },
     create: {
       email,
-      role: "ADMIN",
+      role,
       showAdult: false,
+      emailVerified: true,
     },
   });
 
