@@ -18,15 +18,10 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
-const authBaseURL =
-  process.env.BETTER_AUTH_URL ||
-  process.env.NEXTAUTH_URL ||
-  "http://localhost:3000";
+const authBaseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
 
 const authSecret =
-  process.env.BETTER_AUTH_SECRET ||
-  process.env.NEXTAUTH_SECRET ||
-  "dev-only-better-auth-secret-change-me";
+  process.env.BETTER_AUTH_SECRET || "dev-only-better-auth-secret-change-me";
 
 const fromEmail = "noreply@panels.lat";
 
