@@ -1,6 +1,6 @@
 export const authDatabaseConfig = {
   provider: "postgresql",
   verification: {
-    modelName: "verificationToken",
+    modelName: "verification",
   },
 } as const;
