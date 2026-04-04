@@ -3,6 +3,7 @@ import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { magicLink } from "better-auth/plugins";
 import { Resend } from "resend";
 
+import { authDatabaseConfig } from "./auth-config";
 import { authAdditionalFields } from "./auth-fields";
 import { prisma } from "./prisma";
 import { logger } from "./logger";
@@ -32,10 +33,7 @@ const fromEmail = "noreply@panels.lat";
 export const auth = betterAuth({
   baseURL: authBaseURL,
   secret: authSecret,
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-    usePlural: true,
-  }),
+  database: prismaAdapter(prisma, authDatabaseConfig),
   user: {
     additionalFields: authAdditionalFields.user,
   },
