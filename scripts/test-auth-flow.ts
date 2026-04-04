@@ -53,7 +53,7 @@ async function testAuthFlow() {
 
   // 3. Verificar tokens de verificación
   console.log('3. Checking verification tokens...');
-  const tokens = await prisma.verificationToken.findMany({
+  const tokens = await prisma.verification.findMany({
     where: {
       expiresAt: {
         gt: new Date(),
@@ -76,7 +76,7 @@ async function testAuthFlow() {
 
   // 4. Verificar tokens expirados
   console.log('4. Checking expired tokens...');
-  const expiredTokens = await prisma.verificationToken.findMany({
+  const expiredTokens = await prisma.verification.findMany({
     where: {
       expiresAt: {
         lte: new Date(),
