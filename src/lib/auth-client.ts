@@ -8,7 +8,8 @@ import { authAdditionalFields } from "@/lib/auth-fields";
 const authBaseURL =
   typeof window !== "undefined"
     ? window.location.origin
-    : process.env.NEXT_PUBLIC_APP_URL ||
+    : process.env.BETTER_AUTH_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
       process.env.NEXTAUTH_URL ||
       "http://localhost:3000";
 
