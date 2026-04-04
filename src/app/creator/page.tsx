@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { logger } from "@/lib/logger";
 import Link from "next/link";
+
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
 
 interface Series {
   id: string;
@@ -15,24 +16,25 @@ interface Series {
   status: string;
   _count: {
     volumes: number;
+    chapters: number;
   };
 }
 
 export default function CreatorPage() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const [series, setSeries] = useState<Series[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isPending && !session) {
       router.push("/login");
-    } else if (status === "authenticated" && session?.user?.role !== "CREATOR") {
+    } else if (session && session.user?.role !== "CREATOR") {
       router.push("/");
-    } else if (status === "authenticated" && session?.user?.role === "CREATOR") {
+    } else if (session?.user?.role === "CREATOR") {
       fetchSeries();
     }
-  }, [status, session, router]);
+  }, [isPending, session, router]);
 
   const fetchSeries = async () => {
     try {
@@ -50,7 +52,7 @@ export default function CreatorPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (isPending || loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-zinc-600 dark:text-zinc-400">Cargando...</div>
@@ -58,11 +60,11 @@ export default function CreatorPage() {
     );
   }
 
-  if (status === "unauthenticated" || session?.user?.role !== "CREATOR") {
+  if (!session || session?.user?.role !== "CREATOR") {
     return null;
   }
 
-  const totalChapters = 0;
+  const totalChapters = series.reduce((acc, current) => acc + current._count.chapters, 0);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 dark:bg-black px-6 py-12">

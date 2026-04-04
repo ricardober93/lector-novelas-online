@@ -55,11 +55,11 @@ async function testAuthFlow() {
   console.log('3. Checking verification tokens...');
   const tokens = await prisma.verificationToken.findMany({
     where: {
-      expires: {
+      expiresAt: {
         gt: new Date(),
       },
     },
-    orderBy: { expires: 'desc' },
+    orderBy: { expiresAt: 'desc' },
     take: 10,
   });
 
@@ -68,7 +68,7 @@ async function testAuthFlow() {
   } else {
     console.log(`✅ Found ${tokens.length} valid tokens:`);
     tokens.forEach((token, i) => {
-      const expiresIn = Math.floor((token.expires.getTime() - Date.now()) / 1000 / 60);
+      const expiresIn = Math.floor((token.expiresAt.getTime() - Date.now()) / 1000 / 60);
       console.log(`   ${i + 1}. ${token.identifier} - expires in ${expiresIn} minutes`);
     });
   }
@@ -78,7 +78,7 @@ async function testAuthFlow() {
   console.log('4. Checking expired tokens...');
   const expiredTokens = await prisma.verificationToken.findMany({
     where: {
-      expires: {
+      expiresAt: {
         lte: new Date(),
       },
     },
@@ -87,7 +87,7 @@ async function testAuthFlow() {
   if (expiredTokens.length > 0) {
     console.log(`⚠️  Found ${expiredTokens.length} expired tokens (should be cleaned up)`);
     console.log('   Run this to clean up:');
-    console.log('   DELETE FROM verification_tokens WHERE expires < NOW();');
+    console.log('   DELETE FROM verification_tokens WHERE expiresAt < NOW();');
   } else {
     console.log('✅ No expired tokens');
   }
@@ -97,7 +97,7 @@ async function testAuthFlow() {
   console.log('5. Checking active sessions...');
   const sessions = await prisma.session.findMany({
     where: {
-      expires: {
+      expiresAt: {
         gt: new Date(),
       },
     },
@@ -109,7 +109,7 @@ async function testAuthFlow() {
       },
     },
     take: 5,
-    orderBy: { expires: 'desc' },
+    orderBy: { expiresAt: 'desc' },
   });
 
   if (sessions.length === 0) {
@@ -117,7 +117,7 @@ async function testAuthFlow() {
   } else {
     console.log(`✅ Found ${sessions.length} active sessions:`);
     sessions.forEach((session, i) => {
-      const expiresIn = Math.floor((session.expires.getTime() - Date.now()) / 1000 / 60 / 60 / 24);
+      const expiresIn = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000 / 60 / 60 / 24);
       console.log(`   ${i + 1}. ${session.user.email} - expires in ${expiresIn} days`);
     });
   }

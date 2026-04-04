@@ -8,6 +8,7 @@ type UserProfile = {
   name: string | null;
   email: string | null;
   image: string | null;
+  showAdult: boolean;
 };
 
 export default function ProfilePage() {
@@ -19,6 +20,7 @@ export default function ProfilePage() {
     name: null,
     email: null,
     image: null,
+    showAdult: false,
   });
 
   useEffect(() => {
@@ -29,13 +31,14 @@ export default function ProfilePage() {
           name: string | null;
           email: string | null;
           image: string | null;
+          showAdult: boolean;
         }>("/api/user");
 
-        console.log(data, "api/puser");
         setUser({
           name: data.name ?? null,
           email: data.email ?? null,
           image: data.image ?? null,
+          showAdult: data.showAdult ?? false,
         });
       } catch (e) {
         const message = e instanceof Error ? e.message : "Error desconocido";
@@ -55,7 +58,7 @@ export default function ProfilePage() {
       await fetcher("/api/user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: user.name }),
+        body: JSON.stringify({ name: user.name, showAdult: user.showAdult }),
       });
 
       setSuccess("Perfil actualizado correctamente");
@@ -165,6 +168,26 @@ export default function ProfilePage() {
                   />
                 </div>
               )}
+            </div>
+
+            <div className="flex items-start gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 p-4">
+              <input
+                id="showAdult"
+                type="checkbox"
+                checked={user.showAdult}
+                onChange={(e) =>
+                  setUser({ ...user, showAdult: e.target.checked })
+                }
+                className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+              />
+              <label htmlFor="showAdult" className="text-sm text-zinc-700 dark:text-zinc-300">
+                <span className="block font-medium text-zinc-900 dark:text-zinc-50">
+                  Mostrar contenido adulto (+18)
+                </span>
+                <span className="block mt-1 text-zinc-600 dark:text-zinc-400">
+                  Si lo activas, verás series y capítulos marcados como adultos en home y lectura.
+                </span>
+              </label>
             </div>
 
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">

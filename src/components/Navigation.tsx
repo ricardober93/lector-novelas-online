@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { authClient } from "@/lib/auth-client";
+
 export function Navigation() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPanelDropdownOpen, setIsPanelDropdownOpen] = useState(false);
   const pathname = usePathname();
@@ -20,9 +21,10 @@ export function Navigation() {
   const toggleDropdown = () => setIsPanelDropdownOpen(!isPanelDropdownOpen);
   const closeDropdown = () => setIsPanelDropdownOpen(false);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     closeDrawer();
-    signOut({ callbackUrl: "/" });
+    await authClient.signOut();
+    window.location.href = "/";
   };
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export function Navigation() {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-4">
-          {status === "loading" ? (
+          {isPending ? (
             <div className="h-8 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
           ) : session ? (
             <>
@@ -213,7 +215,7 @@ export function Navigation() {
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-4">
-                {status === "loading" ? (
+                {isPending ? (
                   <div className="h-8 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
                 ) : session ? (
                   <div className="space-y-2">

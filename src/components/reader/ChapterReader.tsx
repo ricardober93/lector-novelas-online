@@ -20,6 +20,7 @@ interface Page {
 interface ChapterReaderProps {
   chapterId: string;
   pages: Page[];
+  initialPage?: number;
   onProgressUpdate?: (currentPage: number, progress: number) => void;
   showAds?: boolean;
   adFrequency?: number;
@@ -28,13 +29,18 @@ interface ChapterReaderProps {
 export function ChapterReader({
   chapterId,
   pages: initialPages,
+  initialPage = 1,
   onProgressUpdate,
   showAds = true,
   adFrequency = 5,
 }: ChapterReaderProps) {
   const pages = initialPages.length > 0 ? initialPages : getDemoImages(20);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [progress, setProgress] = useState(0);
+  const totalPages = pages.length;
+  const normalizedInitialPage = Math.min(Math.max(initialPage, 1), totalPages);
+  const [currentPage, setCurrentPage] = useState(normalizedInitialPage);
+  const [progress, setProgress] = useState(
+    () => (normalizedInitialPage / totalPages) * 100
+  );
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showUI, setShowUI] = useState(true);
   const lastSavedPage = useRef(0);
@@ -42,8 +48,7 @@ export function ChapterReader({
   const pageRefs = useRef<Map<string, HTMLElement>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  const totalPages = pages.length;
+  const hasAppliedInitialScroll = useRef(false);
 
   const saveProgress = useCallback(
     async (page: number) => {
@@ -111,6 +116,19 @@ export function ChapterReader({
       observerRef.current = null;
     };
   }, [pages, totalPages, onProgressUpdate, saveProgress]);
+
+  useEffect(() => {
+    if (hasAppliedInitialScroll.current) return;
+    if (normalizedInitialPage <= 1) {
+      hasAppliedInitialScroll.current = true;
+      return;
+    }
+
+    hasAppliedInitialScroll.current = true;
+    requestAnimationFrame(() => {
+      scrollToPage(normalizedInitialPage);
+    });
+  }, [normalizedInitialPage, scrollToPage]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {

@@ -2,8 +2,9 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import useSWR from "swr";
+
+import { authClient } from "@/lib/auth-client";
 import { fetcher } from "@/lib/fetcher";
 
 interface Series {
@@ -54,7 +55,7 @@ export default function SeriesPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: session } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   
   const { data: seriesData, error: seriesError } = useSWR<{ series: Series }>(
     `/api/series/${id}`,
@@ -69,6 +70,9 @@ export default function SeriesPage({
   const series = seriesData?.series || null;
   const loading = !seriesData && !seriesError;
   const error = seriesError ? "Error al cargar serie" : null;
+  const hasAdultAccess = session?.user?.showAdult ?? false;
+  const isRestricted = !!series?.isAdult && !hasAdultAccess;
+  const waitingForSession = !!series?.isAdult && isPending;
 
   const readingProgress: Record<string, ReadingProgress> = {};
   if (historyData?.history) {
@@ -89,6 +93,14 @@ export default function SeriesPage({
     );
   }
 
+  if (waitingForSession) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="text-zinc-600 dark:text-zinc-400">Cargando...</div>
+      </div>
+    );
+  }
+
   if (!series) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
@@ -102,6 +114,37 @@ export default function SeriesPage({
           >
             ← Volver al inicio
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isRestricted) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 dark:bg-black flex items-center justify-center px-6">
+        <div className="max-w-md w-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center">
+          <div className="text-5xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
+            Contenido no disponible
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+            Esta serie está marcada como contenido adulto. Activa la opción
+            "Mostrar contenido adulto (+18)" desde tu perfil para verla.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href={session ? "/profile" : "/login"}
+              className="rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 px-4 py-3 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200"
+            >
+              {session ? "Ir al perfil" : "Iniciar sesión"}
+            </Link>
+            <Link
+              href="/"
+              className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              Volver al inicio
+            </Link>
+          </div>
         </div>
       </div>
     );

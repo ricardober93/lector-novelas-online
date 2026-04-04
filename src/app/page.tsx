@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
+import { useState } from "react";
 import useSWR from "swr";
-import { logger } from "@/lib/logger";
+
+import { authClient } from "@/lib/auth-client";
 import { fetcher } from "@/lib/fetcher";
 import { normalizeReadingHistory } from "@/utils/historyNormalizer";
 import { SeriesCardSkeleton } from "@/components/skeletons/SeriesCardSkeleton";
@@ -27,26 +28,38 @@ interface Series {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
+  const [searchTerm, setSearchTerm] = useState("");
+  const showAdult = session?.user?.showAdult ?? false;
+  const searchQuery = searchTerm.trim();
+  const seriesParams = new URLSearchParams({
+    limit: "12",
+    showAdult: showAdult ? "true" : "false",
+  });
+
+  if (searchQuery) {
+    seriesParams.set("q", searchQuery);
+  }
+
+  const seriesKey = `/api/series?${seriesParams.toString()}`;
   const {
     data: seriesData,
     error: seriesError,
     isLoading,
     mutate: mutateSeries,
-  } = useSWR<{ series: Series[] }>("/api/series?limit=12", fetcher);
+  } = useSWR<{ series: Series[] }>(seriesKey, fetcher);
   
-  const { data: historyRaw, mutate: mutateHistory } = useSWR<unknown>(
+  const { data: historyRaw } = useSWR<unknown>(
     session ? "/api/reading-history" : null,
     fetcher,
   );
 
   const series = (() => {
     if (Array.isArray(seriesData?.series)) {
-      return seriesData.series;
+      return seriesData.series.filter((item) => showAdult || !item.isAdult);
     }
     if (Array.isArray(seriesData)) {
-      console.warn("API returned unexpected structure (direct array instead of wrapped)");
-      return seriesData;
+      return seriesData.filter((item) => showAdult || !item.isAdult);
     }
     return [];
   })();
@@ -107,6 +120,40 @@ export default function Home() {
           </p>
         </div>
 
+        <div className="mb-10">
+          <div className="mx-auto max-w-2xl">
+            <label
+              htmlFor="series-search"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+            >
+              Buscar series
+            </label>
+            <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+              <svg
+                className="h-5 w-5 text-zinc-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35m1.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                id="series-search"
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-transparent text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none"
+                placeholder="Busca por título o descripción"
+              />
+            </div>
+          </div>
+        </div>
+
         <SectionErrorBoundary fallback={<HistoryErrorFallback />}>
           {session && readingHistory.length > 0 && (
             <div className="mb-12">
@@ -117,7 +164,7 @@ export default function Home() {
                 {readingHistory?.map((item) => (
                   <Link
                     key={item.id}
-                    href={`/read/${item.chapter.id}`}
+                    href={`/read/${item.chapter.id}?page=${item.lastPage}`}
                     className="block rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                   >
                     <div className="flex items-center justify-between">
@@ -162,10 +209,14 @@ export default function Home() {
               <div className="text-center py-16 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <div className="text-6xl mb-4">📚</div>
                 <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-4">
-                  No hay series disponibles aún
+                  {searchQuery
+                    ? "No encontramos resultados para tu búsqueda"
+                    : "No hay series disponibles aún"}
                 </p>
                 <p className="text-sm text-zinc-500 dark:text-zinc-500">
-                  ¡Sé el primero en crear una serie!
+                  {searchQuery
+                    ? "Prueba con otro término o borra el filtro de búsqueda"
+                    : "¡Sé el primero en crear una serie!"}
                 </p>
               </div>
             ) : (

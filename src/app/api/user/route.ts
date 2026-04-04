@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    console.log("session", session);
+    const session = await auth.api.getSession({ headers: request.headers });
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -16,6 +15,7 @@ export async function GET(request: NextRequest) {
       name: session.user.name,
       email: session.user.email,
       image: session.user.image,
+      showAdult: session.user.showAdult,
     });
   } catch (error) {
     return NextResponse.json(
@@ -27,13 +27,31 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const body = await request.json();
+    const name = typeof body?.name === "string" ? body.name : undefined;
+    const showAdult =
+      typeof body?.showAdult === "boolean" ? body.showAdult : undefined;
+    const image =
+      typeof body?.image === "string"
+        ? body.image
+        : body?.image === null
+          ? null
+          : undefined;
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(image !== undefined ? { image } : {}),
+        ...(showAdult !== undefined ? { showAdult } : {}),
+      },
+    });
 
     return NextResponse.json({
       success: true,

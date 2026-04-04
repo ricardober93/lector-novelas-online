@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+
+import { authClient } from "@/lib/auth-client";
 import { validateEmail } from "@/lib/validate";
 
 export default function LoginPage() {
@@ -24,9 +25,9 @@ export default function LoginPage() {
     setEmailError(null);
 
     try {
-      const result = await signIn("email", {
+      const result = await authClient.signIn.magicLink({
         email,
-        redirect: false,
+        callbackURL: "/",
       });
 
       if (result?.error) {
@@ -49,7 +50,7 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
               Revisa tu email
             </h1>
-            <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-zinc-600 dark:text-zinc-400">
               Enviamos un enlace mágico a <strong>{email}</strong>. Haz click en el enlace para ingresar a tu cuenta.
             </p>
           </div>

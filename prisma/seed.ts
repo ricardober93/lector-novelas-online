@@ -26,7 +26,7 @@ async function seedUsers(tx: any) {
         email: userData.email,
         name: userData.name,
         role: userData.role,
-        emailVerified: new Date(),
+        emailVerified: true,
       },
     });
     users.push(user);

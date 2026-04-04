@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
-import { useSession } from "next-auth/react";
 
 interface Moderation {
   id: string;
@@ -42,21 +43,21 @@ interface Moderation {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const [moderations, setModerations] = useState<Moderation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("PENDING");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isPending && !session) {
       router.push("/login");
-    } else if (status === "authenticated" && session?.user?.role !== "ADMIN") {
+    } else if (session && session?.user?.role !== "ADMIN") {
       router.push("/");
-    } else if (status === "authenticated" && session?.user?.role === "ADMIN") {
+    } else if (session?.user?.role === "ADMIN") {
       fetchModerations();
     }
-  }, [status, session, router, filter]);
+  }, [isPending, session, router, filter]);
 
   const fetchModerations = async () => {
     try {
@@ -101,7 +102,7 @@ export default function AdminPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (isPending || loading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-zinc-600 dark:text-zinc-400">Cargando...</div>
@@ -109,7 +110,7 @@ export default function AdminPage() {
     );
   }
 
-  if (status === "unauthenticated" || session?.user?.role !== "ADMIN") {
+  if (!session || session?.user?.role !== "ADMIN") {
     return null;
   }
 

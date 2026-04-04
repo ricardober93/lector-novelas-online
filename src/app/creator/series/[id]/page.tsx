@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 
 interface Series {
   id: string;
@@ -35,7 +35,7 @@ export default function SeriesDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
   const [series, setSeries] = useState<Series | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
