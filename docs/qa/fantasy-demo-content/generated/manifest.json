@@ -1,0 +1,136 @@
+{
+  "chapter": "QA - La Llama del Umbral / Capitulo 1",
+  "totalPages": 16,
+  "width": 900,
+  "height": 1400,
+  "files": [
+    {
+      "page": 1,
+      "file": "public/qa/fantasy-demo/chapter-1/001.png",
+      "title": "Terraza del umbral",
+      "beat": "Ira observa la ciudad suspendida y la llama distante.",
+      "prompt": "Ira on a high terrace, distant beacon fading, moonlit suspended city.",
+      "sizeBytes": 206338
+    },
+    {
+      "page": 2,
+      "file": "public/qa/fantasy-demo/chapter-1/002.png",
+      "title": "La llama vacila",
+      "beat": "El fuego sagrado casi se apaga en un relicario antiguo.",
+      "prompt": "Weak sacred flame inside a copper relic bowl, intimate magical close-up.",
+      "sizeBytes": 210662
+    },
+    {
+      "page": 3,
+      "file": "public/qa/fantasy-demo/chapter-1/003.png",
+      "title": "Archivo de piedra",
+      "beat": "Ira encuentra a Taro entre mapas imposibles.",
+      "prompt": "Archive chamber, impossible maps, Ira and Taro in urgent conversation.",
+      "sizeBytes": 222076
+    },
+    {
+      "page": 4,
+      "file": "public/qa/fantasy-demo/chapter-1/004.png",
+      "title": "Nhal despierta",
+      "beat": "El zorro espectral revela el camino en un mapa dorado.",
+      "prompt": "Spectral fox tracing a golden route over an old map in a dark archive.",
+      "sizeBytes": 206721
+    },
+    {
+      "page": 5,
+      "file": "public/qa/fantasy-demo/chapter-1/005.png",
+      "title": "Puente de niebla",
+      "beat": "El grupo sale hacia el bosque suspendido.",
+      "prompt": "Three figures crossing a narrow bridge over a misty abyss under the moon.",
+      "sizeBytes": 229479
+    },
+    {
+      "page": 6,
+      "file": "public/qa/fantasy-demo/chapter-1/006.png",
+      "title": "Escaleras rotas",
+      "beat": "Las ruinas inclinadas obligan a avanzar con cuidado.",
+      "prompt": "Broken stairs, collapsing ruins, moonlight cutting across sharp architecture.",
+      "sizeBytes": 211958
+    },
+    {
+      "page": 7,
+      "file": "public/qa/fantasy-demo/chapter-1/007.png",
+      "title": "Monolito rúnico",
+      "beat": "Las runas responden al tacto de Ira.",
+      "prompt": "Tall glowing monolith with amber runes reacting to Ira's presence.",
+      "sizeBytes": 210306
+    },
+    {
+      "page": 8,
+      "file": "public/qa/fantasy-demo/chapter-1/008.png",
+      "title": "Cámara circular",
+      "beat": "El corazón del ritual aparece casi vacío.",
+      "prompt": "Circular ritual chamber with a nearly extinguished brazier at the center.",
+      "sizeBytes": 208702
+    },
+    {
+      "page": 9,
+      "file": "public/qa/fantasy-demo/chapter-1/009.png",
+      "title": "El precio",
+      "beat": "Ira entiende el costo del ritual.",
+      "prompt": "Emotional close-up of Ira realizing the ritual requires a personal memory.",
+      "sizeBytes": 201929
+    },
+    {
+      "page": 10,
+      "file": "public/qa/fantasy-demo/chapter-1/010.png",
+      "title": "La discusión",
+      "beat": "Taro intenta detenerla en medio del viento mágico.",
+      "prompt": "Tense confrontation between Ira and Taro in a draft-filled ritual chamber.",
+      "sizeBytes": 210015
+    },
+    {
+      "page": 11,
+      "file": "public/qa/fantasy-demo/chapter-1/011.png",
+      "title": "La decisión",
+      "beat": "Ira toca el brasero y Nhal la rodea.",
+      "prompt": "Ira kneeling at the brazier while the spectral fox spirals around her arm.",
+      "sizeBytes": 205028
+    },
+    {
+      "page": 12,
+      "file": "public/qa/fantasy-demo/chapter-1/012.png",
+      "title": "Ritual del umbral",
+      "beat": "La cámara estalla en símbolos y luz ámbar.",
+      "prompt": "Controlled explosion of amber light, sigils, mist and ritual energy.",
+      "sizeBytes": 216018
+    },
+    {
+      "page": 13,
+      "file": "public/qa/fantasy-demo/chapter-1/013.png",
+      "title": "La ciudad despierta",
+      "beat": "La magia se propaga por torres y puentes.",
+      "prompt": "Wide city scene with rune lines and distant towers igniting with light.",
+      "sizeBytes": 236667
+    },
+    {
+      "page": 14,
+      "file": "public/qa/fantasy-demo/chapter-1/014.png",
+      "title": "Calma al amanecer",
+      "beat": "Los tres descansan junto al fuego restaurado.",
+      "prompt": "Quiet recovery scene at dawn beside the restored sacred flame.",
+      "sizeBytes": 238421
+    },
+    {
+      "page": 15,
+      "file": "public/qa/fantasy-demo/chapter-1/015.png",
+      "title": "Mapa vivo",
+      "beat": "Un nuevo mapa se dibuja solo bajo la mirada de Taro.",
+      "prompt": "Luminous map drawing itself on ancient stone tiles as Taro watches.",
+      "sizeBytes": 220647
+    },
+    {
+      "page": 16,
+      "file": "public/qa/fantasy-demo/chapter-1/016.png",
+      "title": "Segundo portal",
+      "beat": "Un nuevo portal se enciende a lo lejos.",
+      "prompt": "Dawn exterior with Ira seeing a second portal flare in the distance.",
+      "sizeBytes": 209752
+    }
+  ]
+}

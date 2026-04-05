@@ -1,6 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSessionCookie } from "better-auth/cookies";
+function hasSessionCookie(request: NextRequest): boolean {
+  const sessionCookieNames = [
+    "better-auth.session_token",
+    "__Secure-better-auth.session_token",
+  ];
+
+  return sessionCookieNames.some((cookieName) => {
+    const value = request.cookies.get(cookieName)?.value;
+    return typeof value === "string" && value.length > 0;
+  });
+}
 
 export function proxy(request: NextRequest) {
   const isProtectedPath = ["/creator", "/read", "/admin"].some((path) =>
@@ -11,9 +21,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionCookie = getSessionCookie(request);
-
-  if (!sessionCookie) {
+  if (!hasSessionCookie(request)) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }

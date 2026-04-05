@@ -1,0 +1,145 @@
+{
+  "assetDir": "C:\\Users\\Ricardo Bermudez\\dev\\lector-manga-online\\public\\qa\\fantasy-demo\\chapter-1",
+  "zipPath": "C:\\Users\\Ricardo Bermudez\\dev\\lector-manga-online\\tests\\fixtures\\qa-fantasy-demo\\chapter-1.zip",
+  "expectedPageCount": 16,
+  "results": {
+    "pageCountWithinLimit": true,
+    "zipWithinLimit": true,
+    "numericOrderingStable": true,
+    "files": [
+      {
+        "file": "001.png",
+        "bytes": 206338,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "002.png",
+        "bytes": 210662,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "003.png",
+        "bytes": 222076,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "004.png",
+        "bytes": 206721,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "005.png",
+        "bytes": 229479,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "006.png",
+        "bytes": 211958,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "007.png",
+        "bytes": 210306,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "008.png",
+        "bytes": 208702,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "009.png",
+        "bytes": 201929,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "010.png",
+        "bytes": 210015,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "011.png",
+        "bytes": 205028,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "012.png",
+        "bytes": 216018,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "013.png",
+        "bytes": 236667,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "014.png",
+        "bytes": 238421,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "015.png",
+        "bytes": 220647,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      },
+      {
+        "file": "016.png",
+        "bytes": 209752,
+        "width": 900,
+        "height": 1400,
+        "mime": "image/png",
+        "passed": true
+      }
+    ]
+  },
+  "summary": {
+    "passedFiles": 16,
+    "totalFiles": 16,
+    "zipBytes": 3134661
+  }
+}
